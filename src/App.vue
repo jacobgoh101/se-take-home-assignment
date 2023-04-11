@@ -135,21 +135,20 @@ export default {
             return false;
           }
         ).filter(i => !isNaN(i))
-        console.log('targetIndex', targetIndex);
         if (targetIndex) {
           this.vipOrderQueue.splice(targetIndex, 0, order)
         } else {
           this.vipOrderQueue.push(order)
         }
       } else if (order.type === 'regular') {
-        const targetIndex = this.regularOrderQueue.find(
+        const targetIndex = this.regularOrderQueue.map(
           (iOrder, iOrderIndex) => {
             if (order.createdAt < iOrder.createdAt) {
               return iOrderIndex;
             }
             return false;
           }
-        )
+        ).filter(i => !isNaN(i))
         if (targetIndex) {
           this.regularOrderQueue.splice(targetIndex, 0, order)
         } else {

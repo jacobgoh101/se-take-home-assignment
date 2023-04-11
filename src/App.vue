@@ -13,6 +13,7 @@ export default {
     processedBy?: number; // bot ID
     completedAt?: Date;
     completedBy?: number; // bot ID
+    expectCompletedAt?: Date;
   }
 } */
       orders: {},
@@ -27,8 +28,14 @@ export default {
 } */
       bots: {},
       vipOrderQueue: [],
-      regularOrderQueue: []
+      regularOrderQueue: [],
+      timeNow: new Date()
     }
+  },
+  mounted() {
+    setInterval(() => {
+      this.timeNow = new Date()
+    }, 1000)
   },
   computed: {
     orderQueue() {
@@ -167,6 +174,13 @@ export default {
       this.bots[availableBot.id].processingOrderId = order.id
       this.orders[order.id].processedAt = new Date()
       this.orders[order.id].processedBy = availableBot.id
+
+      const expectedTimeNeededByBotInMs = 10000
+      //set expectCompletedAt
+      this.orders[order.id].expectCompletedAt = new Date(
+        this.orders[order.id].processedAt.getTime() + expectedTimeNeededByBotInMs
+      )
+
       const timeoutId = setTimeout(() => {
         if (this.bots[availableBot.id].destroyedAt) {
           console.error('Bot destroyed. Order processing cancelled.')
@@ -190,7 +204,7 @@ export default {
         this.bots = { ...this.bots }
         this.orders[order.id] = { ...this.orders[order.id] }
         this.orders = { ...this.orders }
-      }, 10000);
+      }, expectedTimeNeededByBotInMs);
       this.bots[availableBot.id].processingTimeoutId = timeoutId
 
       this.bots[availableBot.id] = { ...this.bots[availableBot.id] }
@@ -240,6 +254,8 @@ export default {
       <li v-for="order in ordersInProgress"
           :key="order.id">
         {{ order.id }} - {{ order.type }} - {{ order.createdAt }}
+        <!-- use timeNow and order.expectCompletedAt to check how many seconds left for the order -->
+        Completing in {{ Math.floor((order.expectCompletedAt - timeNow) / 1000) }} seconds
       </li>
     </ul>
   </div>
